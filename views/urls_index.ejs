@@ -1,0 +1,15 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../views/partials/_header %>
+</head>
+<body>
+  <h1>List of Generated and Long URLS</h1>
+  <% for (var key in urls){ %>
+    <ul>%=`http://localhost:8080/u/${key} `%></a><%=` (${urls[key]})`%>  EDIT  DELETE</ul>
+  <% }; %>
+<!-- <a href='<%$ =urls[key] %>'>< -->
+ </body>
+</html>
