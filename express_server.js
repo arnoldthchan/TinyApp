@@ -1,23 +1,22 @@
 var express = require('express');
 var ejs = require('ejs');
 const bodyParser = require('body-parser');
+
 //Creates variable which is this express server
-//The part where you are creating a server, but with no attachments
 var app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 
 var PORT = process.env.PORT || 8080; // default port 8080
 
 
-//Uses EJS templates, helps separate JS and HTML
-//Make a new directory called 'views', make a new .ejs file
-//name the .ejs to whatever link you want, paste HTML in
+//Allow to view EJS files for EJS Template usage
 app.set('view engine', 'ejs');
 
 //Database object of shortened URLS and entered URLs
 var urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  '9sm5xK': 'http://www.google.com',
+  'aaaaaa': 'http://youtube.com'
 };
 
 // produces a string of 6 random alphanumeric characters:
