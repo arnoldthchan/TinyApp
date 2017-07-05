@@ -33,14 +33,6 @@ function generateRandomString() {
   return randomStr;
 }
 
-// function findURL(obj){
-//   var URL = '';
-//   for each (var link in obj){
-//     //if obj == in database
-//   }
-//   return URL
-// }
-
 app.listen(PORT, function() {
   console.log(`Example Express app listening on port ${PORT}!`);
 });
@@ -48,7 +40,8 @@ app.listen(PORT, function() {
 //Main page, does nothing
 app.get('/', function(req, res) {
   res.statusCode = 200;
-  res.send('Hello!');
+  // res.send('Hello!');
+  res.redirect('urls');
 });
 
 //Renders the ejs page with the for loop of shortened URLS
@@ -69,7 +62,7 @@ app.post('/urls', (req, res) => {
 
 //WHERE THE FORM IS
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  res.render('urls_new', {username: req.cookies['username']});
 });
 
 //Deletes URL entry based on shortened URL entered
@@ -86,6 +79,12 @@ app.post('/login', (req, res) =>{
   res.cookie('username', loggedName);
   // console.log(`Logged in under username: ${loggedName}`);
   // res.send(`Logged in under username: ${loggedName}`);
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) =>{
+  res.clearCookie('username');
+  // console.log(`Logging out`);
   res.redirect('/urls');
 });
 
@@ -122,7 +121,8 @@ app.get('/urls/:id', (req, res) => {
   let fullURL = `localhost:8080/urls/${templateVars.shortURL}`;
   res.render('urls_show', {
     templateVars:templateVars,
-    fullURL: fullURL
+    fullURL: fullURL,
+    username: req.cookies['username']
     });
 });
 

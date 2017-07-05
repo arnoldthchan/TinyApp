@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 
-<meta charset="UTF-8">
+<meta charset='UTF-8'>
 <title>TinyApp</title>
-<link rel='shortcut icon' type='image/x-icon' href='https://goo.gl/p19ZNS' />
-<font face="Comic sans MS"; color='FUCHSIA';>
-  <h1><marquee>HELLO <%= username%></marquee></h1>
-  <ul><a href="/urls/new">Home</a>   <a href="/urls">List of URLS</a>  <a href='/urls/new'>Link Shortener </a></ul>
+<link rel='shortcut icon' type='image/x-icon' href='https://goo.gl/p19ZNS'/>
 
-  <form action="/login" method="POST" style="">
-    <label for="userLogin">Enter a URL:</label>
-      <input id="userLogin" type="text" name="username" placeholder="Username" style="width: 150px">
-    <input type="submit" value="Submit">
-  </form>
+<font face='Comic sans MS'; color='FUCHSIA';>
+  <h1>TinyApp URL Shortener</h1>
+  <ul>
+    <a href='/urls'>Home</a> <a href='/urls'>List of URLS</a>
+    <a href='/urls/new'>Link Shortener</a>
+  </ul>
 
+  <%if (username){%>
+    <h1>HELLO <%=username%></h1>
+    <form action='/logout' method='POST' style=''>
+      <input type='submit' value='Logout'>
+    </form>
+
+  <% } else {%>
+    <h1>NOT LOGGED IN</h1>
+    <form action='/login' method='POST' style=''>
+      <label for='userLogin'>Username:</label>
+        <input id='userLogin' type='text' name='username' placeholder='Username' style='width: 150px'>
+      <input type='submit' value='Submit'>
+    </form>
+  <%}%>
 </font>
