@@ -5,18 +5,19 @@
 <head>
   <% include ../views/partials/_header %>
 </head>
+
 <body>
-  <h1>List of Generated and Long URLS</h1>
+  <h1>List of URLs</h1>
   <% for (var key in urls){ %>
     <ul>
-      <form method="POST" action="/urls/<%=`${key}`%>/delete">
         <a href ='http://localhost:8080/u/<%=`${key}`%>'>
-          <%=`http://localhost:8080/u/${key}`%>
-        </a>
-<!--         <a href ='http://google.com'>
- -->          <%=`(${urls[key]})`%>
-<!--         </a>
- -->        <input type="submit" value="Delete">
+        <%=`http://localhost:8080/u/${key}`%></a><%=`(${urls[key]})`%>
+      <form method="POST" action="/urls/<%=`${key}`%>">
+        <input type="submit" value="Edit">
+      </form>
+
+      <form method="POST" action="/urls/<%=`${key}`%>/delete">
+        <input type="submit" value="Delete">
       </form>
     </ul>
   <% }; %>

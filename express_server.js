@@ -16,7 +16,7 @@ app.set('view engine', 'ejs');
 let urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com',
-  'aaaaaa': 'http://youtube.com'
+  'aaaaaa': 'http://www.youtube.com'
 };
 
 // produces a string of 6 random alphanumeric characters:
@@ -63,6 +63,12 @@ app.post('/urls', (req, res) => {
   res.redirect(`urls/${genURL}`);
 });
 
+//WHERE THE FORM IS
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
+//Deletes URL entry based on shortened URL entered
 app.post('/urls/:shortenedURL/delete', (req, res) =>{
   let link = req.params.shortenedURL;
   console.log(`${link} at ${urlDatabase[link]}... Deleting`);
@@ -70,15 +76,24 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
     res.redirect('/urls');
 });
 
-//WHERE THE FORM IS
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+// POST /urls/:id to allow editing of longURL
+app.post('/urls/:id/edit', (req, res) =>{
+  let link = urlDatabase[req.params.id];
+  newURL = req.body.newLongURL;
+  // console.log(`CURRENT LINK: ${link}`);
+  // console.log(`NEW LINK: ${newURL}`);
+  urlDatabase[req.params.id] = newURL;
+  res.redirect(`/urls`);
+});
+
+app.post('/urls/:id', (req, res) =>{
+  res.redirect(`/urls/${req.params.id}`);
 });
 
 //Redirects to actual webpage based on shortenedURL
 app.get('/u/:shortenedURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortenedURL];
-  console.log(req.params.shortenedURL);
+  // console.log(req.params.shortenedURL); //Logs the generated 6-dig ID
   if (urlDatabase[req.params.shortenedURL]){
     res.redirect(longURL);
   } else {
