@@ -1,9 +1,12 @@
 let express = require('express');
 let ejs = require('ejs');
 let bodyParser = require('body-parser');
+let cookieParser = require('cookie-parser');
+
 
 //Creates variable which is this express server
 let app = express();
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 
 let PORT = process.env.PORT || 8080; // default port 8080
@@ -50,7 +53,8 @@ app.get('/', function(req, res) {
 
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase,
+    username: req.cookies['username']};
   res.render('urls_index', templateVars);
 });
 
@@ -76,6 +80,15 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
     res.redirect('/urls');
 });
 
+//LOGIN ENDPOINT AFTER SUBMITTING FROM THE HEADER
+app.post('/login', (req, res) =>{
+  loggedName = req.body.username;
+  res.cookie('username', loggedName);
+  // console.log(`Logged in under username: ${loggedName}`);
+  // res.send(`Logged in under username: ${loggedName}`);
+  res.redirect('/urls');
+});
+
 // POST /urls/:id to allow editing of longURL
 app.post('/urls/:id/edit', (req, res) =>{
   let link = urlDatabase[req.params.id];
@@ -86,6 +99,7 @@ app.post('/urls/:id/edit', (req, res) =>{
   res.redirect(`/urls`);
 });
 
+//redirects to url based on ID link
 app.post('/urls/:id', (req, res) =>{
   res.redirect(`/urls/${req.params.id}`);
 });
