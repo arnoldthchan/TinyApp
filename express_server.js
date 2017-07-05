@@ -1,19 +1,19 @@
-var express = require('express');
-var ejs = require('ejs');
-const bodyParser = require('body-parser');
+let express = require('express');
+let ejs = require('ejs');
+let bodyParser = require('body-parser');
 
 //Creates variable which is this express server
-var app = express();
+let app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 
-var PORT = process.env.PORT || 8080; // default port 8080
+let PORT = process.env.PORT || 8080; // default port 8080
 
 
 //Allow to view EJS files for EJS Template usage
 app.set('view engine', 'ejs');
 
 //Database object of shortened URLS and entered URLs
-var urlDatabase = {
+let urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com',
   'aaaaaa': 'http://youtube.com'
@@ -21,14 +21,22 @@ var urlDatabase = {
 
 // produces a string of 6 random alphanumeric characters:
 function generateRandomString() {
-  var randomStr = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for(var i = 0; i < 6; i++) {
+  let randomStr = '';
+  let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for(let i = 0; i < 6; i++) {
       randomStr += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   // console.log(randomStr);
   return randomStr;
 }
+
+// function findURL(obj){
+//   var URL = '';
+//   for each (var link in obj){
+//     //if obj == in database
+//   }
+//   return URL
+// }
 
 app.listen(PORT, function() {
   console.log(`Example Express app listening on port ${PORT}!`);
@@ -43,16 +51,23 @@ app.get('/', function(req, res) {
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  res.render('urls_index', templateVars);
 });
 
 //Uses POST request to submit form data
 app.post('/urls', (req, res) => {
   // console.log(req.body);  // debug statement to see POST parameters
   result = req.body;
-  randomURL = generateRandomString();
-  urlDatabase[randomURL] = result.longURL;
-  res.redirect(`urls/${randomURL}`);
+  genURL = generateRandomString();
+  urlDatabase[genURL] = result.longURL;
+  res.redirect(`urls/${genURL}`);
+});
+
+app.post('/urls/:shortenedURL/delete', (req, res) =>{
+  let link = req.params.shortenedURL;
+  console.log(`${link} at ${urlDatabase[link]}... Deleting`);
+    delete urlDatabase[link];
+    res.redirect('/urls');
 });
 
 //WHERE THE FORM IS
@@ -61,9 +76,10 @@ app.get('/urls/new', (req, res) => {
 });
 
 //Redirects to actual webpage based on shortenedURL
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  if (urlDatabase[req.params.shortURL]){
+app.get('/u/:shortenedURL', (req, res) => {
+  let longURL = urlDatabase[req.params.shortenedURL];
+  console.log(req.params.shortenedURL);
+  if (urlDatabase[req.params.shortenedURL]){
     res.redirect(longURL);
   } else {
     res.statusCode = 404;
@@ -81,6 +97,7 @@ app.get('/urls/:id', (req, res) => {
     });
 });
 
+//Cat.
 app.get('/cat', (req, res) => {
   res.statusCode = 200;
   res.setHeader('content-type', 'text/html');

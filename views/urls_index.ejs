@@ -8,11 +8,19 @@
 <body>
   <h1>List of Generated and Long URLS</h1>
   <% for (var key in urls){ %>
-
-    <ul><%= `http://localhost:8080/u/${key}` %>
-
-    </a><%=` (${urls[key]})`%>  EDIT  DELETE</ul>
+    <ul>
+      <form method="POST" action="/urls/<%=`${key}`%>/delete">
+        <a href ='http://localhost:8080/u/<%=`${key}`%>'>
+          <%=`http://localhost:8080/u/${key}`%>
+        </a>
+<!--         <a href ='http://google.com'>
+ -->          <%=`(${urls[key]})`%>
+<!--         </a>
+ -->        <input type="submit" value="Delete">
+      </form>
+    </ul>
   <% }; %>
-<!-- <a href='<%$ =urls[key] %>'>< -->
- </body>
+<!-- <a href='<%$= urls/[key] %>'><
+ -->
+</body>
 </html>
