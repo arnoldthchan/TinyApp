@@ -4,7 +4,7 @@
 <title>TinyApp</title>
 <link rel='shortcut icon' type='image/x-icon' href='https://goo.gl/p19ZNS'/>
 
-<font face='Comic sans MS'; color='FUCHSIA';>
+<font face='Comic sans MS';>
   <h1>TinyApp URL Shortener</h1>
   <ul>
     <a href='/urls'>Home</a> <a href='/urls'>List of URLS</a>
@@ -12,17 +12,20 @@
   </ul>
 
   <%if (username){%>
-    <h1>HELLO <%=username%></h1>
+    <h4>HELLO <%=username%></h4>
     <form action='/logout' method='POST' style=''>
       <input type='submit' value='Logout'>
     </form>
 
   <% } else {%>
-    <h1>NOT LOGGED IN</h1>
+    <h4>NOT LOGGED IN</h4>
     <form action='/login' method='POST' style=''>
       <label for='userLogin'>Username:</label>
         <input id='userLogin' type='text' name='username' placeholder='Username' style='width: 150px'>
       <input type='submit' value='Submit'>
+    </form>
+    <form action='/register' method='get' style=''>
+      <input type='submit' value='Register'>
     </form>
   <%}%>
 </font>
