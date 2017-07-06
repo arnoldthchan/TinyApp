@@ -1,14 +1,15 @@
 //REQUIRED MODULES
-let express = require('express');
-let ejs = require('ejs');
-let bodyParser = require('body-parser');
-let cookieParser = require('cookie-parser');
+const express = require('express');
+const ejs = require('ejs');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 //Creates variable which is this express server
-let app = express();
+const app = express();
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
-let PORT = process.env.PORT || 8080; // default port 8080
+const PORT = process.env.PORT || 8080; // default port 8080
 
 //Allow to view EJS files for EJS Template usage
 app.set('view engine', 'ejs');
@@ -62,6 +63,14 @@ const users = {
   }
 }
 
+function checkWWW(url){
+  if (!url.includes('http://')){
+    return 'http://'+ url;
+  } else {
+    return url;
+  }
+}
+//
 function urlsForUsers(id){
   let filteredList = {};
   for (obj in urlDatabase){
@@ -76,7 +85,7 @@ function urlsForUsers(id){
 // produces a string of 6 random alphanumeric characters:
 function generateRandomString() {
   let randomStr = '';
-  let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for(let i = 0; i < 6; i++) {
       randomStr += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -202,13 +211,12 @@ app.get('/cat', (req, res) => {
 //Uses POST request to submit form data
 app.post('/urls', (req, res) => {
   // console.log(req.body);  // debug statement to see POST parameters
-  result = req.body.longURL;
+  result = checkWWW(req.body.longURL);
   genURL = generateRandomString();
   urlDatabase[genURL] = {
     longURL: result,
     userID: req.cookies.user_id.id
   };
-  console.log(urlDatabase);
   res.redirect(`urls/${genURL}`);
 });
 
@@ -229,13 +237,15 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
 
 //LOGIN ENDPOINT AFTER SUBMITTING FROM THE HEADER
 app.post('/login', (req, res) =>{
-  loggedName = req.body.email;
-  loggedPass = req.body.password;
+  const loggedName = req.body.email;
+  const loggedPass = req.body.password;
+  const hashed_password = checkUser(loggedName).password
+  const passCheck = bcrypt.compareSync(loggedPass, hashed_password);
   if (checkNewVal('email', loggedName)){
     console.log('ID DOES NOT EXIST');
     res.statusCode = 403;
     res.redirect('/register');
-  } else if(checkUser(loggedPass) && checkUser(loggedName)){
+  } else if(passCheck && checkUser(loggedName)){
     userCode = checkUser(loggedName);
     res.cookie('user_id', userCode);
     res.redirect('/');
@@ -254,10 +264,10 @@ app.post('/logout', (req, res) =>{
 
 // POST /urls/:id to allow editing of longURL
 app.post('/urls/:id/edit', (req, res) =>{
-  let cookie = req.cookies.user_id.id;
-  let allowedUser = urlDatabase[req.params.id].userID;
-  console.log(`${cookie} === ${allowedUser}??`)
-  if (cookie === allowedUser){
+  const cookie = req.cookies.user_id;
+  const allowedUser = urlDatabase[cookie].userID;
+  // console.log(`${cookie} === ${allowedUser}??`)
+  if (cookie.id === allowedUser){
     newURL = req.body.newLongURL;
     urlDatabase[req.params.id].longURL = newURL;
     res.redirect(`/urls`);
@@ -265,7 +275,6 @@ app.post('/urls/:id/edit', (req, res) =>{
     console.log('no permission');
     res.redirect('/urls');
   }
-
 });
 
 //redirects to url based on ID link
@@ -277,6 +286,7 @@ app.post('/urls/:id', (req, res) =>{
 app.post('/register', (req, res) =>{
   let newEmail = req.body.email;
   let password = req.body.password;
+  let hashed_password = bcrypt.hashSync(password, 10);
   //will pass if there is a UNIQUE email and a password
   if (newEmail && password && checkNewVal('email', newEmail)){
     strCookie = generateRandomString();//Generates user_id cookie value
@@ -284,7 +294,7 @@ app.post('/register', (req, res) =>{
     users[strCookie] = {
       id: strCookie,
       email: newEmail,
-      password: password,
+      password: hashed_password,
     };
     res.cookie('user_id', users[strCookie]);
     res.redirect(`/urls`);
