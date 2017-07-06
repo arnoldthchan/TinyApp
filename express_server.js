@@ -57,6 +57,26 @@ function generateRandomString() {
   return randomStr;
 }
 
+//Checks key to reject if key already exists in users object
+function checkNewVal(key, value){
+  for (user in users){
+    let currVal = users[user][key]
+    if (currVal === value){
+      return false;
+    }
+  }
+  return true;
+}
+
+function getUser(id){
+  for (user in users){
+    if(user === id){
+      return user;
+    }
+  }
+  return undefined;
+}
+
 app.listen(PORT, function() {
   console.log(`Example Express app listening on port ${PORT}!`);
 });
@@ -71,13 +91,16 @@ app.get('/', function(req, res) {
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase,
-    username: req.cookies['username']};
+    user_id: req.cookies['user_id']
+  };
   res.render('urls_index', templateVars);
 });
 
 //WHERE THE FORM IS
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', {username: req.cookies['username']});
+  res.render('urls_new', {
+    user_id: req.cookies['user_id'],
+    });
 });
 
 //Redirects to actual webpage based on shortenedURL
@@ -100,7 +123,7 @@ app.get('/urls/:id', (req, res) => {
     res.render('urls_show', {
       templateVars:templateVars,
       fullURL: fullURL,
-      username: req.cookies['username']
+      user_id: req.cookies['user_id']
       });
   } else { //REDIRECTS BACK TO MAIN PAGE OTHERWISE
     res.statusCode = 404;
@@ -113,7 +136,7 @@ app.get('/register', (req, res) =>{
   let templateVars = { shortURL: req.params.id };
   res.render('register',{
     templateVars:templateVars,
-    username: req.cookies['username']
+    user_id: req.cookies['user_id']
   });
 });
 
@@ -149,14 +172,17 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
 //LOGIN ENDPOINT AFTER SUBMITTING FROM THE HEADER
 app.post('/login', (req, res) =>{
   loggedName = req.body.username;
-  res.cookie('username', loggedName);
-  // console.log(`Logged in under username: ${loggedName}`);
-  // res.send(`Logged in under username: ${loggedName}`);
-  res.redirect('/urls');
+  if (checkNewVal('id', loggedName)){
+    console.log('ID DOES NOT EXIST');
+    res.redirect('/register');
+  } else {
+    res.cookie('user_id', users.loggedName);
+    res.redirect('/urls');
+  }
 });
 
 app.post('/logout', (req, res) =>{
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   // console.log(`Logging out`);
   res.redirect('/urls');
 });
@@ -176,31 +202,21 @@ app.post('/urls/:id', (req, res) =>{
   res.redirect(`/urls/${req.params.id}`);
 });
 
-function checkEmail(email){
-  for (user in users){
-    let currEmail = users[user].email
-    console.log(currEmail);
-    if (currEmail === email){
-      console.log('EMAIL ALREADY EXISTS');
-      return false;
-    }
-  }
-  return true;
-}
 //POST REGISTER
 app.post('/register', (req, res) =>{
-  let email = req.body.email;
+  let newEmail = req.body.email;
   let password = req.body.password;
-  if (checkEmail(email)){
+  //will pass if there is a UNIQUE email and a password
+  if (newEmail && password && checkNewVal('email', newEmail)){
     genCookie = generateRandomString();//Generates user_id cookie value
-    res.cookie('user_id', genCookie);
     //ATTEMPTS TO ADD NEW OBJECT
     // let newNum = Object.keys(users).length+1;
     users[genCookie] = {
       id: genCookie,
-      email: email,
+      email: newEmail,
       password: password,
     };
+    res.cookie('user_id', users[genCookie]);
     console.log(users); //DEBUG LOG TO CHECK IF USER IS ADDED, PRAY
     res.redirect(`/urls`);
   } else {
