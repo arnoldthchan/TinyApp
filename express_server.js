@@ -43,6 +43,11 @@ const users = {
     id: "user4RandomID",
     email: "user4@example.com",
     password: "johnbot-feauture"
+  },
+ "user4RandomID": {
+    id: "user5RandomID",
+    email: "hello@hello.com",
+    password: "hello"
   }
 }
 
@@ -57,6 +62,18 @@ function generateRandomString() {
   return randomStr;
 }
 
+
+function checkUser(id){
+  for (user in users){
+    for (i in users[user]){
+      if(users[user][i] === id){
+        return users[user];
+      };
+    }
+  }
+}
+
+
 //Checks key to reject if key already exists in users object
 function checkNewVal(key, value){
   for (user in users){
@@ -65,16 +82,8 @@ function checkNewVal(key, value){
       return false;
     }
   }
-  return true;
-}
-
-function getUser(id){
-  for (user in users){
-    if(user === id){
-      return user;
-    }
-  }
-  return undefined;
+  console.log(user, 'QQQQQQQ');
+  return users[user];
 }
 
 app.listen(PORT, function() {
@@ -85,7 +94,7 @@ app.listen(PORT, function() {
 app.get('/', function(req, res) {
   res.statusCode = 200;
   // res.send('Hello!');
-  res.redirect('urls');
+  res.redirect('/urls');
 });
 
 //Renders the ejs page with the for loop of shortened URLS
@@ -106,7 +115,6 @@ app.get('/urls/new', (req, res) => {
 //Redirects to actual webpage based on shortenedURL
 app.get('/u/:shortenedURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortenedURL];
-  // console.log(req.params.shortenedURL); //Logs the generated 6-dig ID
   if (urlDatabase[req.params.shortenedURL]){
     res.redirect(longURL);
   } else {
@@ -114,6 +122,7 @@ app.get('/u/:shortenedURL', (req, res) => {
     res.send(`<b><marquee>URL DOES NOT EXIST</marquee></b><p><a href='/urls/new'>Back to Link Shortener </a>`);
   }
 });
+
 //Goes to :ID, applies to anything entered after the /urls/
 app.get('/urls/:id', (req, res) => {
   let templateVars = { shortURL: req.params.id };
@@ -135,6 +144,14 @@ app.get('/urls/:id', (req, res) => {
 app.get('/register', (req, res) =>{
   let templateVars = { shortURL: req.params.id };
   res.render('register',{
+    templateVars:templateVars,
+    user_id: req.cookies['user_id']
+  });
+});
+
+app.get('/login', (req, res) => {
+  let templateVars = { shortURL: req.params.id };
+  res.render('login',{
     templateVars:templateVars,
     user_id: req.cookies['user_id']
   });
@@ -171,20 +188,29 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
 
 //LOGIN ENDPOINT AFTER SUBMITTING FROM THE HEADER
 app.post('/login', (req, res) =>{
-  loggedName = req.body.username;
-  if (checkNewVal('id', loggedName)){
+  loggedName = req.body.email;
+  loggedPass = req.body.password;
+  if (checkNewVal('email', loggedName)){
     console.log('ID DOES NOT EXIST');
+    res.statusCode = 403;
     res.redirect('/register');
+  } else if(checkUser(loggedPass) && checkUser(loggedName)){
+    userCode = checkUser(loggedName);
+    res.cookie('user_id', userCode);
+    res.redirect('/');
   } else {
-    res.cookie('user_id', users.loggedName);
+    // res.send('Incorrect Credentials');
+    res.statusCode = 403;
     res.redirect('/urls');
   }
 });
 
+// && USER.USER == loggedName
+
 app.post('/logout', (req, res) =>{
   res.clearCookie('user_id');
   // console.log(`Logging out`);
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 // POST /urls/:id to allow editing of longURL
@@ -210,14 +236,12 @@ app.post('/register', (req, res) =>{
   if (newEmail && password && checkNewVal('email', newEmail)){
     genCookie = generateRandomString();//Generates user_id cookie value
     //ATTEMPTS TO ADD NEW OBJECT
-    // let newNum = Object.keys(users).length+1;
     users[genCookie] = {
       id: genCookie,
       email: newEmail,
       password: password,
     };
     res.cookie('user_id', users[genCookie]);
-    console.log(users); //DEBUG LOG TO CHECK IF USER IS ADDED, PRAY
     res.redirect(`/urls`);
   } else {
     res.statusCode = 400;

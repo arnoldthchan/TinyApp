@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<meta charset='UTF-8'>
+<head>
+  <% include ../views/partials/_header %>
+</head>
+<body>
+  <font face='Comic sans MS';>
+    <%if (user_id){%>
+      <h4>HELLO <%=user_id.id%></h4>
+      <form action='/logout' method='POST' style='margin:5px;'>
+        <input type='submit' value='Logout'>
+      </form>
+
+    <% } else {%>
+      <h4><font color='red'>Not Logged In</font></h4>
+      <form action='/login' method='POST' style=''>
+        <label for='emailLogin'>Email:</label>
+          <input id='emailLogin' type='email' name='email' placeholder='Email' style='width: 150px'>
+        <br>
+        <label for='passwordReg'>Password:</label>
+          <input id='passwordReg' type='password' name='password' placeholder='Password' style='width: 150px'>
+        <input type='submit' value='Submit'>
+      </form>
+    <%}%>
+  </font>
+</body>
