@@ -10,17 +10,16 @@
           <a href ='http://localhost:8080/u/<%=`${key}`%>'>
             <%=`http://localhost:8080/u/${key}`%>
           </a>
-          <%=`(${urls[key]})`%>
+          <%=`(${urls[key].longURL})`%>
         <form method="POST" action="/urls/<%=`${key}`%>">
           <input type="submit" value="Edit" >
         </form>
+
         <form method="POST" action="/urls/<%=`${key}`%>/delete">
           <input type="submit" value="Delete">
         </form>
         <br>
         </div>
     <% }; %>
-  <!-- <a href='<%$= urls/[key] %>'><
-   -->
   </body>
 </html>

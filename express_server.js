@@ -4,7 +4,6 @@ let ejs = require('ejs');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
 
-
 //Creates variable which is this express server
 let app = express();
 app.use(cookieParser());
@@ -16,10 +15,22 @@ app.set('view engine', 'ejs');
 
 //Database object of shortened URLS and original URLs
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com',
-  'aaaaaa': 'http://www.youtube.com',
-  'TestTe': 'http://spotify.com'
+  'b2xVn2': {
+    longURL: 'http://www.lighthouselabs.ca',
+    userID: 'user2RandomID'
+  },
+  '9sm5xK': {
+    longURL: 'http://www.google.com',
+    userID: 'user3RandomID'
+  },
+  'aaaaaa': {
+    longURL: 'http://www.youtube.com',
+    userID: 'user4RandomID'
+  },
+  'TestTe': {
+    longURL: 'http://spotify.com',
+    userID: 'user5RandomID'
+  }
 };
 
 //Object containing Users with ID, Email, pass
@@ -44,13 +55,24 @@ const users = {
     email: "user4@example.com",
     password: "johnbot-feauture"
   },
- "user4RandomID": {
+ "user5RandomID": {
     id: "user5RandomID",
     email: "hello@hello.com",
     password: "hello"
   }
 }
 
+function urlsForUsers(id){
+  let filteredList = {};
+  for (obj in urlDatabase){
+    // console.log(urlDatabase[obj].userID, '===', id);
+    if (urlDatabase[obj].userID === id){
+      // console.log('yes');
+      filteredList[obj] = urlDatabase[obj];
+    }
+  }
+  return filteredList;
+}
 // produces a string of 6 random alphanumeric characters:
 function generateRandomString() {
   let randomStr = '';
@@ -58,21 +80,18 @@ function generateRandomString() {
   for(let i = 0; i < 6; i++) {
       randomStr += possible.charAt(Math.floor(Math.random() * possible.length));
   }
-  // console.log(randomStr);
   return randomStr;
 }
-
 
 function checkUser(id){
   for (user in users){
     for (i in users[user]){
       if(users[user][i] === id){
         return users[user];
-      };
+      }
     }
   }
 }
-
 
 //Checks key to reject if key already exists in users object
 function checkNewVal(key, value){
@@ -82,12 +101,11 @@ function checkNewVal(key, value){
       return false;
     }
   }
-  console.log(user, 'QQQQQQQ');
   return users[user];
 }
 
 app.listen(PORT, function() {
-  console.log(`Example Express app listening on port ${PORT}!`);
+  console.log(`Express app listening on port ${PORT}!`);
 });
 
 //Main page, does nothing
@@ -99,27 +117,41 @@ app.get('/', function(req, res) {
 
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase,
-    user_id: req.cookies['user_id']
-  };
-  res.render('urls_index', templateVars);
+  let checkID = req.cookies.user_id.id;
+  if(checkID) {
+    let templateVars = {
+    urls: urlsForUsers(checkID),
+    user_id: req.cookies[checkID]
+    };
+    res.render('urls_index', templateVars);
+  } else{
+    res.redirect('/register');
+  }
 });
 
 //WHERE THE FORM IS
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', {
-    user_id: req.cookies['user_id'],
-    });
+  let templateVars = {
+      user_id: req.cookies['user_id'],
+      }
+  if (req.headers.cookie){
+    res.render('urls_new', templateVars)
+  } else{
+    res.redirect('/login');
+  }
 });
 
 //Redirects to actual webpage based on shortenedURL
 app.get('/u/:shortenedURL', (req, res) => {
-  let longURL = urlDatabase[req.params.shortenedURL];
-  if (urlDatabase[req.params.shortenedURL]){
-    res.redirect(longURL);
+  // let longURL = urlDatabase[req.params];
+  let shortURL = req.params.shortenedURL;
+  fullURL = urlDatabase[shortURL].longURL
+  if (fullURL){
+    res.redirect(fullURL);
   } else {
     res.statusCode = 404;
-    res.send(`<b><marquee>URL DOES NOT EXIST</marquee></b><p><a href='/urls/new'>Back to Link Shortener </a>`);
+    res.send(`<b><marquee>URL DOES NOT EXIST</marquee></b><p>
+      <a href='/urls/new'>Back to Link Shortener </a>`);
   }
 });
 
@@ -131,7 +163,6 @@ app.get('/urls/:id', (req, res) => {
   if (templateVars.shortURL.length === 6){
     res.render('urls_show', {
       templateVars:templateVars,
-      fullURL: fullURL,
       user_id: req.cookies['user_id']
       });
   } else { //REDIRECTS BACK TO MAIN PAGE OTHERWISE
@@ -168,22 +199,32 @@ app.get('/cat', (req, res) => {
 //POSTS
 //POSTS
 
-
 //Uses POST request to submit form data
 app.post('/urls', (req, res) => {
   // console.log(req.body);  // debug statement to see POST parameters
-  result = req.body;
+  result = req.body.longURL;
   genURL = generateRandomString();
-  urlDatabase[genURL] = result.longURL;
+  urlDatabase[genURL] = {
+    longURL: result,
+    userID: req.cookies.user_id.id
+  };
+  console.log(urlDatabase);
   res.redirect(`urls/${genURL}`);
 });
 
-//Deletes URL entry based on shortened URL entered
+//Deletes URL entry basedon shortened URL entered
 app.post('/urls/:shortenedURL/delete', (req, res) =>{
+  let cookie = req.cookies.user_id.id;
   let link = req.params.shortenedURL;
-  console.log(`${link} at ${urlDatabase[link]}... Deleting`);
+  let allowedUser = urlDatabase[req.params.shortenedURL].userID;
+  if (cookie === allowedUser){
+    // console.log(`${link} at ${urlDatabase[link]}... Deleting`);
     delete urlDatabase[link];
     res.redirect('/urls');
+  } else {
+    console.log('no deleteo, no matcho');
+    res.redirect('/urls');
+  }
 });
 
 //LOGIN ENDPOINT AFTER SUBMITTING FROM THE HEADER
@@ -199,13 +240,11 @@ app.post('/login', (req, res) =>{
     res.cookie('user_id', userCode);
     res.redirect('/');
   } else {
-    // res.send('Incorrect Credentials');
+    res.send('Incorrect Credentials');
     res.statusCode = 403;
     res.redirect('/urls');
   }
 });
-
-// && USER.USER == loggedName
 
 app.post('/logout', (req, res) =>{
   res.clearCookie('user_id');
@@ -215,12 +254,18 @@ app.post('/logout', (req, res) =>{
 
 // POST /urls/:id to allow editing of longURL
 app.post('/urls/:id/edit', (req, res) =>{
-  let link = urlDatabase[req.params.id];
-  newURL = req.body.newLongURL;
-  // console.log(`CURRENT LINK: ${link}`);
-  // console.log(`NEW LINK: ${newURL}`);
-  urlDatabase[req.params.id] = newURL;
-  res.redirect(`/urls`);
+  let cookie = req.cookies.user_id.id;
+  let allowedUser = urlDatabase[req.params.id].userID;
+  console.log(`${cookie} === ${allowedUser}??`)
+  if (cookie === allowedUser){
+    newURL = req.body.newLongURL;
+    urlDatabase[req.params.id].longURL = newURL;
+    res.redirect(`/urls`);
+  } else{
+    console.log('no permission');
+    res.redirect('/urls');
+  }
+
 });
 
 //redirects to url based on ID link
@@ -234,14 +279,14 @@ app.post('/register', (req, res) =>{
   let password = req.body.password;
   //will pass if there is a UNIQUE email and a password
   if (newEmail && password && checkNewVal('email', newEmail)){
-    genCookie = generateRandomString();//Generates user_id cookie value
+    strCookie = generateRandomString();//Generates user_id cookie value
     //ATTEMPTS TO ADD NEW OBJECT
-    users[genCookie] = {
-      id: genCookie,
+    users[strCookie] = {
+      id: strCookie,
       email: newEmail,
       password: password,
     };
-    res.cookie('user_id', users[genCookie]);
+    res.cookie('user_id', users[strCookie]);
     res.redirect(`/urls`);
   } else {
     res.statusCode = 400;
