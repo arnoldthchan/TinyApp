@@ -9,14 +9,12 @@ let cookieParser = require('cookie-parser');
 let app = express();
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
-
 let PORT = process.env.PORT || 8080; // default port 8080
-
 
 //Allow to view EJS files for EJS Template usage
 app.set('view engine', 'ejs');
 
-//Database object of shortened URLS and entered URLs
+//Database object of shortened URLS and original URLs
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com',
@@ -24,7 +22,7 @@ const urlDatabase = {
   'TestTe': 'http://spotify.com'
 };
 
-//Datebase object of Users containg ID, Email, pass
+//Object containing Users with ID, Email, pass
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -178,11 +176,22 @@ app.post('/urls/:id', (req, res) =>{
   res.redirect(`/urls/${req.params.id}`);
 });
 
+function checkEmail(email){
+  for (user in users){
+    let currEmail = users[user].email
+    console.log(currEmail);
+    if (currEmail === email){
+      console.log('EMAIL ALREADY EXISTS');
+      return false;
+    }
+  }
+  return true;
+}
 //POST REGISTER
 app.post('/register', (req, res) =>{
   let email = req.body.email;
   let password = req.body.password;
-  if (email && password){
+  if (checkEmail(email)){
     genCookie = generateRandomString();//Generates user_id cookie value
     res.cookie('user_id', genCookie);
     //ATTEMPTS TO ADD NEW OBJECT
@@ -192,7 +201,7 @@ app.post('/register', (req, res) =>{
       email: email,
       password: password,
     };
-    console.log(users);
+    console.log(users); //DEBUG LOG TO CHECK IF USER IS ADDED, PRAY
     res.redirect(`/urls`);
   } else {
     res.statusCode = 400;

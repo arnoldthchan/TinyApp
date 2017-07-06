@@ -1,19 +1,14 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <% include ../views/partials/_header %>
-</head>
-<body>
-  <h1>ShortURL:<%= templateVars.shortURL%></h1>
-  <form action="/urls/<%= templateVars.shortURL%>/edit" method="POST" style="margin:150px;">
-    <label for="newLongURL">Update the URL:</label>
-    <input id="newLongURL" type="text" name="newLongURL" value="http://www." style="width: 300px">
-    <input type="submit" value="Update">
-  </form>
-
-<!--  <li>Shortened URL:<br>http://localhost:8080/u/<%=templateVars.shortURL%></br></li>
- -->
-</body>
+  <head>
+    <% include ../views/partials/_header %>
+  </head>
+  <body>
+    <h1>ShortURL:<%= templateVars.shortURL%></h1>
+    <form action="/urls/<%= templateVars.shortURL%>/edit" method="POST">
+      <label for="newLongURL">Update the URL:</label>
+      <input id="newLongURL" type="text" name="newLongURL" value="http://www." style="width: 300px">
+      <input type="submit" value="Update">
+    </form>
+  </body>
 </html>

@@ -1,27 +1,26 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <% include ../views/partials/_header %>
-</head>
-
-<body>
-  <h1>List of URLs</h1>
-  <% for (var key in urls){ %>
-    <ul>
-        <a href ='http://localhost:8080/u/<%=`${key}`%>'>
-        <%=`http://localhost:8080/u/${key}`%></a><%=`(${urls[key]})`%>
-      <form method="POST" action="/urls/<%=`${key}`%>">
-        <input type="submit" value="Edit">
-      </form>
-
-      <form method="POST" action="/urls/<%=`${key}`%>/delete">
-        <input type="submit" value="Delete">
-      </form>
-    </ul>
-  <% }; %>
-<!-- <a href='<%$= urls/[key] %>'><
- -->
-</body>
+  <head>
+    <% include ../views/partials/_header %>
+  </head>
+  <body>
+    <h1>List of URLs</h1>
+    <% for (var key in urls){ %>
+        <div class='url'>
+          <a href ='http://localhost:8080/u/<%=`${key}`%>'>
+            <%=`http://localhost:8080/u/${key}`%>
+          </a>
+          <%=`(${urls[key]})`%>
+        <form method="POST" action="/urls/<%=`${key}`%>">
+          <input type="submit" value="Edit" >
+        </form>
+        <form method="POST" action="/urls/<%=`${key}`%>/delete">
+          <input type="submit" value="Delete">
+        </form>
+        <br>
+        </div>
+    <% }; %>
+  <!-- <a href='<%$= urls/[key] %>'><
+   -->
+  </body>
 </html>
