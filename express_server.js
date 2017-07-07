@@ -1,30 +1,29 @@
-'use strict';
-//REQUIRED MODULES
+// 'use strict';
+//Modules
 const express = require('express');
 const ejs = require('ejs');
 const bodyParser = require('body-parser');
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 //Creates variable which is this express server
 const app = express();
-// app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
-const PORT = process.env.PORT || 8080; // default port 8080
-
 app.use(cookieSession({
   name: 'session',
   keys: ['moist'],
 
-  // Cookie Options
+//Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
+
+//Defines PORT, if PORT not found in .env, default to 8080
+const PORT = process.env.PORT || 8080; // default port 8080
 
 //Allow to view EJS files for EJS Template usage
 app.set('view engine', 'ejs');
 
-//Database object of shortened URLS and original URLs
+//Database object of shortened URLS, original links, and userID
 const urlDatabase = {
   'b2xVn2': {
     longURL: 'http://www.lighthouselabs.ca',
@@ -81,7 +80,6 @@ function checkWWW(url){
 function urlsForUsers(user){
   let filteredList = {};
   for (let obj in urlDatabase){
-    // console.log(urlDatabase[obj].userID, '===', user.id);
     if (urlDatabase[obj].userID === user.id){
       filteredList[obj] = urlDatabase[obj];
     }
@@ -92,13 +90,14 @@ function urlsForUsers(user){
 // Produces a random string of 6 alphanumeric characters:
 function generateString() {
   let randomStr = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for(let i = 0; i < 6; i++) {
-      randomStr += possible.charAt(Math.floor(Math.random() * possible.length));
+      randomStr += letters.charAt(Math.floor(Math.random() * letters.length));
   }
   return randomStr;
 }
 
+//Checks if user exists in users database
 function checkUser(id){
   for (let user in users){
     for (let i in users[user]){
@@ -109,7 +108,7 @@ function checkUser(id){
   }
 }
 
-//Checks key to reject if key already exists in users object
+//Checks if key already exists in users object
 function checkNewVal(key, value){
   let correctUser = '';
   for (let user in users){
@@ -123,8 +122,7 @@ function checkNewVal(key, value){
   return users[correctUser];
 }
 
-
-//Main page, does nothing
+//Main get page, redirects based on if user is logged in
 app.get('/', function(req, res) {
   if (isLoggedIn(req)){
     res.statusCode = 200;
@@ -136,7 +134,6 @@ app.get('/', function(req, res) {
 
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
-  // console.log(req);
   if(isLoggedIn(req)) {
     let templateVars = {
     urls: urlsForUsers(req.session.user_id),
@@ -149,7 +146,7 @@ app.get('/urls', (req, res) => {
   }
 });
 
-//WHERE THE FORM IS
+//Page for shortening URL links
 app.get('/urls/new', (req, res) => {
   if(isLoggedIn(req)) {
     let templateVars = {
@@ -163,7 +160,6 @@ app.get('/urls/new', (req, res) => {
 
 //Redirects to actual webpage based on shortenedURL
 app.get('/u/:shortenedURL', (req, res) => {
-  // let longURL = urlDatabase[req.params];
   let shortURL = req.params.shortenedURL;
   if (urlDatabase[shortURL]){
     res.redirect(urlDatabase[shortURL].longURL);
@@ -174,19 +170,21 @@ app.get('/u/:shortenedURL', (req, res) => {
   }
 });
 
-//Goes to :ID, applies to anything entered after the /urls/
+//Goes to shortURL
 app.get('/urls/:id', (req, res) => {
   let templateVars = { shortURL: req.params.id };
   let fullURL = `localhost:8080/urls/${templateVars.shortURL}`;
-  //CHECKS TO SEE IF LENGTH OF URL IS EXACTLY 6 DIGITS LONG
+  //Checks if logged in
   if (!isLoggedIn){
     res.statusCode = 404;
     res.send(`<b>Error: You are not logged in</b><p>
     <a href='/login'>Return to Login </a>`);
+  //Checks if shortened URL is 6 digits and exists in urlDatabase
   } else if (!templateVars.shortURL.length === 6 || !urlDatabase[req.params.id]){
     res.statusCode = 404;
     res.send(`<b>Error: URL does not exist</b><p>
       <a href='/login'>Return to Login </a>`);
+    //Checks current user is the same as the userID of the URL
   } else if(urlDatabase[req.params.id].userID !== req.session.user_id.id){
     res.statusCode = 404;
     res.send(`<b>Error: You do not own this URL</b><p>
@@ -200,7 +198,7 @@ app.get('/urls/:id', (req, res) => {
   }
 });
 
-//REGISTRATION PAGE
+//Registration page, redirects if already logged in
 app.get('/register', (req, res) =>{
   if (isLoggedIn(req)){
     res.redirect('/urls');
@@ -213,22 +211,24 @@ app.get('/register', (req, res) =>{
   }
 });
 
+//Login page, will redirect to URLs if already logged in
 app.get('/login', (req, res) => {
   if(isLoggedIn(req)){
     res.redirect('/urls');
   } else{
-  let templateVars = { shortURL: req.params.id };
-  res.render('login',{
-    templateVars:templateVars,
-    user_id: req.session.user_id
-  });
+    let templateVars = { shortURL: req.params.id };
+    res.render('login',{
+      templateVars:templateVars,
+      user_id: req.session.user_id
+    });
   }
-
 });
 
-//POSTS
-//POSTS
-//POSTS
+/*
+
+          POST ENDPOINTS
+
+*/
 
 //Uses POST request to submit form data
 app.post('/urls', (req, res) => {
@@ -238,12 +238,12 @@ app.post('/urls', (req, res) => {
     longURL: result,
     userID: req.session.user_id.id
   };
-  // console.log(urlDatabase);
   res.redirect(`urls/${genURL}`);
 });
 
-//Deletes URL entry basedon shortened URL entered
+//Deletes URL entry based on shortened URL query
 app.post('/urls/:shortenedURL/delete', (req, res) =>{
+  //Error if not logged in
   if(!isLoggedIn){
     res.send(`<b>Error: Not Logged in</b><p>
       <a href='/login'>Return to Login </a>`)
@@ -251,29 +251,29 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
     let cookie = req.session.user_id.id;
     let link = req.params.shortenedURL;
     let allowedUser = urlDatabase[req.params.shortenedURL].userID;
+    //Checks if user is the one that created the URL
     if (cookie === allowedUser){
-      // console.log(`${link} at ${urlDatabase[link]}... Deleting`);
       delete urlDatabase[link];
       res.redirect('/urls');
       } else {
-        console.log('no deleteo, no matcho');
         res.redirect('/urls');
       }
   }
 });
 
-//LOGIN ENDPOINT
+//Logs in if correct credentials
 app.post('/login', (req, res) =>{
   const loggedName = req.body.email;
   const loggedPass = req.body.password;
   var hashed_password = '';
+  //Errors if user or password entries not filled
   if(loggedName && checkUser(loggedName) && loggedPass.length > 0){
     hashed_password = checkUser(loggedName).password;
   } else{
     res.send(`<b>Error: Username and Password not entered correctly</b><p>
     <a href='/login'>Return to Login </a>`);
   }
-  //Password matches, logging in
+  //Logs in if password matches hashed password in users object
   if(bcrypt.compareSync(loggedPass, hashed_password)){
     const user_id = checkUser(loggedName);
     req.session.user_id = user_id;
@@ -286,12 +286,13 @@ app.post('/login', (req, res) =>{
   }
 });
 
+//Logout post, deletes cookie and redirects to URL
 app.post('/logout', (req, res) =>{
   req.session = null;
   res.redirect('/urls');
 });
 
-// POST /urls/:id to allow editing of longURL
+//Editing page for specific shortened URL in query
 app.post('/urls/:id/edit', (req, res) =>{
   const cookie = req.session.user_id.id;
   const allowedUser = urlDatabase[req.params.id].userID;
@@ -300,38 +301,37 @@ app.post('/urls/:id/edit', (req, res) =>{
     urlDatabase[req.params.id].longURL = newURL;
     res.redirect(`/urls`);
   } else{
-    console.log('no permission');
     res.redirect('/urls');
   }
 });
 
-//redirects to url based on ID link
+//Redirects to url based on shortened URL query
 app.post('/urls/:id', (req, res) =>{
   res.redirect(`/urls/${req.params.id}`);
 });
 
-//POST endpoint for
+//Registers new user to users object
 app.post('/register', (req, res) =>{
   let newEmail = req.body.email;
   let password = req.body.password;
-  //will pass if there is a UNIQUE email and a password
+  //Checks if email and password are not empty
   if(!password || !newEmail){
     res.statusCode = 400;
     res.send(`<b>Error: Username or Password missing</b><p>
     <a href='/register'>Return to Register </a>`);
+    //Passes if email is not in use
   } else if(!checkNewVal('email', newEmail)){
     res.statusCode = 400;
     res.send(`<b>Error: Username already exists</b><p>
     <a href='/register'>Return to Register </a>`);
   } else {
+    //Adds to users object based on random string and credentials entered
     const randomStr = generateString();
-    //ATTEMPTS TO ADD NEW OBJECT
     addUser(randomStr, newEmail, password);
     req.session.user_id = users[randomStr];
     console.log(users);
     res.redirect(`/urls`);
   }
-
 });
 
 //

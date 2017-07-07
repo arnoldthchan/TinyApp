@@ -5,10 +5,9 @@
   </head>
   <body>
     <h3>Shortened URL: <%= templateVars.shortURL%></h3>
-    <h3>Long URL: <%= longURL%></h3>
     <form action="/urls/<%= templateVars.shortURL%>/edit" method="POST">
       <label for="newLongURL">Update the URL:</label>
-      <input id="newLongURL" type="text" name="newLongURL" value="http://www." style="width: 300px">
+      <input id="newLongURL" type="text" name="newLongURL" value="<%=longURL%>" style="width: 300px">
       <input type="submit" value="Update">
     </form>
   </body>
