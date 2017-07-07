@@ -4,9 +4,10 @@
     <% include ../views/partials/_header %>
   </head>
   <body>
-   <h1>List of URLs</h1>
+   <h1>URLs</h1>
     <% for (var key in urls){ %>
-        <div class='url'>
+    <%= key%>
+        <li>
           <a href ='http://localhost:8080/u/<%=`${key}`%>'>
             <%=`http://localhost:8080/u/${key}`%>
           </a>
@@ -14,12 +15,11 @@
         <form method="POST" action="/urls/<%=`${key}`%>">
           <input type="submit" value="Edit" >
         </form>
-
-        <form method="POST" action="/urls/<%=`${key}`%>/delete">
+        <form method="POST" action="/urls/">
           <input type="submit" value="Delete">
         </form>
         <br>
-        </div>
+        </li>
     <% }; %>
   </body>
 </html>

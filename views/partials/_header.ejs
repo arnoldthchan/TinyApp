@@ -6,15 +6,19 @@
 
 <font face='Comic sans MS';>
   <h1><marquee>TinyApp URL Shortener</marquee></h1>
+  <br>
   <a href='/urls'>URLS</a>
+  <br>
   <a href='/urls/new'>Link Shortener</a>
   <%if (user_id !== undefined){%>
-    <h4>Hello there, <%=user_id.email%></h4>
-    <form action='/logout' method='POST' style='margin:5px;'>
+    <h4>Hello there, <%=user_id.email%>!</h4>
+    <form action='/logout' method='POST' style=''>
     <input type='submit' value='Logout'>
     </form>
   <% } else {%>
+    <br>
     <a href='/register'>Sign Up</a>
+    <br>
     <a href='/login'>Login</a>
   <%}%>
   <br>

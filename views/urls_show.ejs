@@ -4,7 +4,8 @@
     <% include ../views/partials/_header %>
   </head>
   <body>
-    <h1>ShortURL:<%= templateVars.shortURL%></h1>
+    <h3>Shortened URL: <%= templateVars.shortURL%></h3>
+    <h3>Long URL: <%= longURL%></h3>
     <form action="/urls/<%= templateVars.shortURL%>/edit" method="POST">
       <label for="newLongURL">Update the URL:</label>
       <input id="newLongURL" type="text" name="newLongURL" value="http://www." style="width: 300px">
