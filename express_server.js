@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 8080; // default port 8080
 
 app.use(cookieSession({
   name: 'session',
-  keys: ['PINEAPPLE'],
+  keys: ['moist'],
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -137,10 +137,11 @@ app.get('/', function(req, res) {
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
   let checkID = req.cookies.user_id;
+  // console.log(req.cookies);
   if(checkID) {
     let templateVars = {
-    urls: urlsForUsers(checkID),
-    user_id: req.cookies[checkID]
+    urls: urlsForUsers(checkID.id),
+    user_id: checkID
     };
     res.render('urls_index', templateVars);
   } else{
@@ -151,9 +152,9 @@ app.get('/urls', (req, res) => {
 //WHERE THE FORM IS
 app.get('/urls/new', (req, res) => {
   let templateVars = {
-      user_id: req.cookies['user_id'],
+      user_id: req.cookies.user_id,
       }
-  if (req.headers.cookie){
+  if (req.cookies.user_id){
     res.render('urls_new', templateVars)
   } else{
     res.redirect('/login');
@@ -182,7 +183,7 @@ app.get('/urls/:id', (req, res) => {
   if (templateVars.shortURL.length === 6){
     res.render('urls_show', {
       templateVars:templateVars,
-      user_id: req.cookies['user_id']
+      user_id: req.cookies.user_id
       });
   } else { //REDIRECTS BACK TO MAIN PAGE OTHERWISE
     res.statusCode = 404;
@@ -195,7 +196,7 @@ app.get('/register', (req, res) =>{
   let templateVars = { shortURL: req.params.id };
   res.render('register',{
     templateVars:templateVars,
-    user_id: req.cookies['user_id']
+    user_id: req.cookies.user_id
   });
 });
 
@@ -203,7 +204,7 @@ app.get('/login', (req, res) => {
   let templateVars = { shortURL: req.params.id };
   res.render('login',{
     templateVars:templateVars,
-    user_id: req.cookies['user_id']
+    user_id: req.cookies.user_id
   });
 });
 
@@ -243,18 +244,21 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
 app.post('/login', (req, res) =>{
   const loggedName = req.body.email;
   const loggedPass = req.body.password;
-  const hashed_password = checkUser(loggedName)
-  const passCheck = bcrypt.compareSync(loggedPass, hashed_password);
-  if (checkNewVal('email', loggedName)){
-    console.log('ID DOES NOT EXIST');
-    res.statusCode = 403;
-    res.redirect('/register');
-  } else if(passCheck && checkUser(loggedName)){
+  var hashed_password = '';
+  if(checkUser(loggedName) && loggedPass.length > 0){
+    hashed_password = checkUser(loggedName).password;
+  } else{
+    hashed_password = undefined;
+  }
+  if(hashed_password && bcrypt.compareSync(loggedPass, hashed_password)){
     userCode = checkUser(loggedName);
     res.cookie('user_id', userCode);
     res.redirect('/');
+  } else if(checkNewVal('email', loggedName) && hashed_password !== undefined){
+    res.statusCode = 403;
+    res.redirect('/register');
   } else {
-    res.send('Incorrect Credentials');
+    // res.send('Incorrect Credentials');
     res.statusCode = 403;
     res.redirect('/urls');
   }
@@ -302,6 +306,7 @@ app.post('/register', (req, res) =>{
       password: hashed_password,
     };
     res.cookie('user_id', users[strCookie]);
+    console.log(users);
     res.redirect(`/urls`);
   } else {
     res.statusCode = 400;
