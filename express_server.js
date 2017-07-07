@@ -128,7 +128,7 @@ app.get('/', function(req, res) {
   if (isLoggedIn(req)){
     res.statusCode = 200;
     res.redirect('/urls');
-  } else{
+  } else {
     res.redirect('/login');
   }
 });
@@ -141,7 +141,7 @@ app.get('/urls', (req, res) => {
     user_id: req.session.user_id
     };
     res.render('urls_index', templateVars);
-  } else{
+  } else {
       res.send(`<b>Error: Not Logged in</b><p>
       <a href='/login'>Return to Login </a>`);
   }
@@ -154,7 +154,7 @@ app.get('/urls/new', (req, res) => {
       user_id: req.session.user_id
     }
     res.render('urls_new', templateVars);
-  } else{
+  } else {
       res.redirect('/login');
   }
 });
@@ -190,7 +190,7 @@ app.get('/urls/:id', (req, res) => {
     res.statusCode = 404;
     res.send(`<b>Error: You do not own this URL</b><p>
     <a href='/login'>Return to Login </a>`);
-  } else{
+  } else {
     res.render('urls_show', {
       templateVars:templateVars,
       longURL: urlDatabase[req.params.id].longURL,
@@ -203,7 +203,7 @@ app.get('/urls/:id', (req, res) => {
 app.get('/register', (req, res) =>{
   if (isLoggedIn(req)){
     res.redirect('/urls');
-  } else{
+  } else {
     let templateVars = { shortURL: req.params.id };
     res.render('register',{
       templateVars:templateVars,
@@ -216,7 +216,7 @@ app.get('/register', (req, res) =>{
 app.get('/login', (req, res) => {
   if(isLoggedIn(req)){
     res.redirect('/urls');
-  } else{
+  } else {
     let templateVars = { shortURL: req.params.id };
     res.render('login',{
       templateVars:templateVars,
@@ -248,7 +248,7 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
   if(!isLoggedIn){
     res.send(`<b>Error: Not Logged in</b><p>
       <a href='/login'>Return to Login </a>`)
-  } else{
+  } else {
     let cookie = req.session.user_id.id;
     let link = req.params.shortenedURL;
     let allowedUser = urlDatabase[req.params.shortenedURL].userID;
@@ -270,7 +270,7 @@ app.post('/login', (req, res) =>{
   //Errors if user or password entries not filled
   if(loggedName && checkUser(loggedName) && loggedPass.length > 0){
     hashed_password = checkUser(loggedName).password;
-  } else{
+  } else {
     res.send(`<b>Error: Username and Password not entered correctly</b><p>
     <a href='/login'>Return to Login </a>`);
   }
@@ -301,7 +301,7 @@ app.post('/urls/:id/edit', (req, res) =>{
     const newURL = req.body.newLongURL;
     urlDatabase[req.params.id].longURL = newURL;
     res.redirect(`/urls`);
-  } else{
+  } else {
     res.redirect('/urls');
   }
 });
