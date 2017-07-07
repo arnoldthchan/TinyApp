@@ -1,25 +1,23 @@
 <!DOCTYPE html>
-
+<html lang="en">
 <meta charset='UTF-8'>
 <title>TinyApp</title>
 <link rel='shortcut icon' type='image/x-icon' href='https://goo.gl/p19ZNS'/>
 
-<font face='Comic sans MS';>
-  <h1><marquee>TinyApp URL Shortener</marquee></h1>
+<h1>TinyApp URL Shortener</h1>
+<br>
+<a href='/urls'>URLS</a>
+<br>
+<a href='/urls/new'>Shorten a URL</a>
+<%if (user_id !== undefined){%>
+  <h4>Hello there, <%=user_id.email%>!</h4>
+  <form action='/logout' method='POST' style=''>
+  <input type='submit' value='Logout'>
+  </form>
+<% } else {%>
   <br>
-  <a href='/urls'>URLS</a>
+  <a href='/register'>Sign Up</a>
   <br>
-  <a href='/urls/new'>Shorten a URL</a>
-  <%if (user_id !== undefined){%>
-    <h4>Hello there, <%=user_id.email%>!</h4>
-    <form action='/logout' method='POST' style=''>
-    <input type='submit' value='Logout'>
-    </form>
-  <% } else {%>
-    <br>
-    <a href='/register'>Sign Up</a>
-    <br>
-    <a href='/login'>Login</a>
-  <%}%>
-  <br>
-</font>
+  <a href='/login'>Login</a>
+<%}%>
+<br>

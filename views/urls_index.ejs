@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+<meta charset='UTF-8'>
   <head>
     <% include ../views/partials/_header %>
   </head>
   <body>
-   <h1>URLs</h1>
+    <h1>URLs</h1>
     <% for (var key in urls){ %>
     <%= key%>
-        <li>
-          <a href ='http://localhost:8080/u/<%=`${key}`%>'>
-            <%=`http://localhost:8080/u/${key}`%>
-          </a>
-          <%=`(${urls[key].longURL})`%>
-        <form method="POST" action="/urls/<%=`${key}`%>">
-          <input type="submit" value="Edit" >
-        </form>
-        <form method="POST" action="/urls/<%=`${key}`%>/delete">
-          <input type="submit" value="Delete">
-        </form>
-        <br>
-        </li>
+      <li>
+        <a href ='http://localhost:8080/u/<%=`${key}`%>'>
+          <%=`http://localhost:8080/u/${key}`%>
+        </a>
+        <%=`(${urls[key].longURL})`%>
+      <form method="POST" action="/urls/<%=`${key}`%>">
+        <input type="submit" value="Edit" >
+      </form>
+      <form method="POST" action="/urls/<%=`${key}`%>/delete">
+        <input type="submit" value="Delete">
+      </form>
+      <br>
+      </li>
     <% }; %>
   </body>
 </html>

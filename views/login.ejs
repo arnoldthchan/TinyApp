@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-
+<html lang="en">
 <meta charset='UTF-8'>
 <head>
   <% include ../views/partials/_header %>
 </head>
 <body>
-  <font face='Comic sans MS';>
-      <h4><font color='red'>Please Login</font></h4>
-      <form action='/login' method='POST' style=''>
-        <label for='emailLogin'>Email:</label>
-          <input id='emailLogin' type='email' name='email' placeholder='Email' style='width: 150px'>
-        <br>
-        <label for='passwordReg'>Password:</label>
-          <input id='passwordReg' type='password' name='password' placeholder='Password' style='width: 150px'>
-        <input type='submit' value='Submit'>
-      </form>
-  </font>
+  <h4>Login</h4>
+  <form action='/login' method='POST' style=''>
+    <label for='emailLogin'>Email:</label>
+      <input id='emailLogin' type='email' name='email' placeholder='Email' style='width: 150px'>
+    <br>
+    <label for='passwordReg'>Password:</label>
+      <input id='passwordReg' type='password' name='password' placeholder='Password' style='width: 150px'>
+    <input type='submit' value='Submit'>
+  </form>
 </body>
