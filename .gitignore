@@ -57,4 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
+#Testing and Mac Files
+test.js
 .DS_Store
