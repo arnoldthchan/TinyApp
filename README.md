@@ -4,8 +4,10 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product :computer:
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Registration page"](https://github.com/arnoldthchan/TinyApp/blob/master/docs/register.png?raw=true)
+!["Updating shortened URL links"](https://github.com/arnoldthchan/TinyApp/blob/master/docs/update-url.png?raw=true)
+!["Displaying all the URLs shortened by the user"](https://github.com/arnoldthchan/TinyApp/blob/master/docs/urls-page.png?raw=true)
+
 
 ## Dependencies :octocat:
 
