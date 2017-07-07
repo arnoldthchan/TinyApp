@@ -44,31 +44,13 @@ const urlDatabase = {
 };
 
 //Object containing Users with ID, Email, pass
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
- "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  },
- "user3RandomID": {
-    id: "user3RandomID",
-    email: "user3@example.com",
-    password: "pairsbot-pair"
-  },
- "user4RandomID": {
-    id: "user4RandomID",
-    email: "user4@example.com",
-    password: "johnbot-feauture"
-  },
- "user5RandomID": {
-    id: "user5RandomID",
-    email: "hello@hello.com",
-    password: "hello"
+const users = {};
+
+function addUser(id, email, password){
+  users[id] = {
+    id: id,
+    email: email,
+    password: bcrypt.hashSync(password, 10)
   }
 }
 
@@ -315,3 +297,7 @@ app.post('/register', (req, res) =>{
     res.redirect(`/register`);
   }
 });
+
+addUser('aaaaaa', 'hello@hello.com', 'hello');
+addUser('user2RandomID', 'user2@example.com', 'dishwasher-funk');
+addUser('user2RandomID', 'pairsbot@pair.com', 'pair');
