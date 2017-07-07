@@ -3,6 +3,7 @@ const express = require('express');
 const ejs = require('ejs');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 //Creates variable which is this express server
@@ -10,6 +11,14 @@ const app = express();
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 const PORT = process.env.PORT || 8080; // default port 8080
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['PINEAPPLE'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 //Allow to view EJS files for EJS Template usage
 app.set('view engine', 'ejs');
@@ -64,6 +73,7 @@ const users = {
 }
 
 function checkWWW(url){
+  // console.log('URL:',url);
   if (!url.includes('http://')){
     return 'http://'+ url;
   } else {
@@ -126,7 +136,7 @@ app.get('/', function(req, res) {
 
 //Renders the ejs page with the for loop of shortened URLS
 app.get('/urls', (req, res) => {
-  let checkID = req.cookies.user_id.id;
+  let checkID = req.cookies.user_id;
   if(checkID) {
     let templateVars = {
     urls: urlsForUsers(checkID),
@@ -134,7 +144,7 @@ app.get('/urls', (req, res) => {
     };
     res.render('urls_index', templateVars);
   } else{
-    res.redirect('/register');
+    res.redirect('/login');
   }
 });
 
@@ -197,13 +207,6 @@ app.get('/login', (req, res) => {
   });
 });
 
-//Cat.
-app.get('/cat', (req, res) => {
-  res.statusCode = 200;
-  res.setHeader('content-type', 'text/html');
-  res.render('cat');
-});
-
 //POSTS
 //POSTS
 //POSTS
@@ -217,6 +220,7 @@ app.post('/urls', (req, res) => {
     longURL: result,
     userID: req.cookies.user_id.id
   };
+  // console.log(urlDatabase);
   res.redirect(`urls/${genURL}`);
 });
 
@@ -239,7 +243,7 @@ app.post('/urls/:shortenedURL/delete', (req, res) =>{
 app.post('/login', (req, res) =>{
   const loggedName = req.body.email;
   const loggedPass = req.body.password;
-  const hashed_password = checkUser(loggedName).password
+  const hashed_password = checkUser(loggedName)
   const passCheck = bcrypt.compareSync(loggedPass, hashed_password);
   if (checkNewVal('email', loggedName)){
     console.log('ID DOES NOT EXIST');
@@ -264,10 +268,10 @@ app.post('/logout', (req, res) =>{
 
 // POST /urls/:id to allow editing of longURL
 app.post('/urls/:id/edit', (req, res) =>{
-  const cookie = req.cookies.user_id;
-  const allowedUser = urlDatabase[cookie].userID;
+  const cookie = req.cookies.user_id.id;
+  const allowedUser = urlDatabase[req.params.id].userID;
   // console.log(`${cookie} === ${allowedUser}??`)
-  if (cookie.id === allowedUser){
+  if (cookie === allowedUser){
     newURL = req.body.newLongURL;
     urlDatabase[req.params.id].longURL = newURL;
     res.redirect(`/urls`);
@@ -275,6 +279,7 @@ app.post('/urls/:id/edit', (req, res) =>{
     console.log('no permission');
     res.redirect('/urls');
   }
+
 });
 
 //redirects to url based on ID link
