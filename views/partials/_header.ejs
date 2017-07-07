@@ -11,7 +11,7 @@
 <a href='/urls/new'>Shorten a URL</a>
 <%if (user_id !== undefined){%>
   <h4>Hello there, <%=user_id.email%>!</h4>
-  <form action='/logout' method='POST' style=''>
+  <form action='/logout?_method=DELETE' method='POST' style=''>
   <input type='submit' value='Logout'>
   </form>
 <% } else {%>

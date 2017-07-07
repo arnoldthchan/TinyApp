@@ -6,9 +6,11 @@ const ejs = require('ejs');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override')
 
 //Creates variable which is this express server
 const app = express();
+app.use(methodOverride('_method'))
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
@@ -243,7 +245,7 @@ app.post('/urls', (req, res) => {
 });
 
 //Deletes URL entry based on shortened URL query
-app.post('/urls/:shortenedURL/delete', (req, res) =>{
+app.delete('/urls/:shortenedURL/delete', (req, res) =>{
   //Error if not logged in
   if(!isLoggedIn){
     res.send(`<b>Error: Not Logged in</b><p>
@@ -287,8 +289,8 @@ app.post('/login', (req, res) =>{
   }
 });
 
-//Logout post, deletes cookie and redirects to URL
-app.post('/logout', (req, res) =>{
+//Logout, deletes cookie and redirects to URL
+app.delete('/logout', (req, res) =>{
   req.session = null;
   res.redirect('/urls');
 });
@@ -330,7 +332,6 @@ app.post('/register', (req, res) =>{
     const randomStr = generateString();
     addUser(randomStr, newEmail, password);
     req.session.user_id = users[randomStr];
-    console.log(users);
     res.redirect(`/urls`);
   }
 });
