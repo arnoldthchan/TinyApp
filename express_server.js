@@ -1,3 +1,4 @@
+'use strict';
 //REQUIRED MODULES
 const express = require('express');
 const ejs = require('ejs');
@@ -43,10 +44,11 @@ const urlDatabase = {
   }
 };
 
-//Object containing Users with ID, Email, pass
+//Object containing User object with ID, Email, pass
+//the ID is a random 6digit alphanumeric string using the generateString function
 const users = {};
 
-//
+//Adds user to users object when given randomID, email, and password parameters
 function addUser(randID, email, password){
   users[randID] = {
     id: randID,
@@ -55,8 +57,8 @@ function addUser(randID, email, password){
   }
 }
 
+//Checks to see if user is logged in by seeing if their cookie value is empty
 function isLoggedIn(req){
-  // console.log('isLOGGEDIN',req.user_id);
   if(req.session.length === 0){
     return false;
   } else {
@@ -64,19 +66,21 @@ function isLoggedIn(req){
   }
 }
 
-//
+//Checks URLs entered if they begin with 'http://'
+//Will add to front of URL if not
 function checkWWW(url){
-  if (!url.includes('http://')){
+  if (url.includes('http://') === 0){
     return 'http://'+ url;
   } else {
     return url;
   }
 }
 
-//
+//Filters all of the urlDatabase to see which userIDs for the urls match the userid provided
+//Then returns an object of URLs only accessible to that user
 function urlsForUsers(user){
   let filteredList = {};
-  for (obj in urlDatabase){
+  for (let obj in urlDatabase){
     // console.log(urlDatabase[obj].userID, '===', user.id);
     if (urlDatabase[obj].userID === user.id){
       filteredList[obj] = urlDatabase[obj];
@@ -84,8 +88,9 @@ function urlsForUsers(user){
   }
   return filteredList;
 }
-// produces a string of 6 random alphanumeric characters:
-function generateRandomString() {
+
+// Produces a random string of 6 alphanumeric characters:
+function generateString() {
   let randomStr = '';
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for(let i = 0; i < 6; i++) {
@@ -95,8 +100,8 @@ function generateRandomString() {
 }
 
 function checkUser(id){
-  for (user in users){
-    for (i in users[user]){
+  for (let user in users){
+    for (let i in users[user]){
       if(users[user][i] === id){
         return users[user];
       }
@@ -106,13 +111,16 @@ function checkUser(id){
 
 //Checks key to reject if key already exists in users object
 function checkNewVal(key, value){
-  for (user in users){
+  let correctUser = '';
+  for (let user in users){
     let currVal = users[user][key]
     if (currVal === value){
       return false;
+    } else {
+      correctUser = user;
     }
   }
-  return users[user];
+  return users[correctUser];
 }
 
 
@@ -224,8 +232,8 @@ app.get('/login', (req, res) => {
 
 //Uses POST request to submit form data
 app.post('/urls', (req, res) => {
-  result = checkWWW(req.body.longURL);
-  genURL = generateRandomString();
+  const result = checkWWW(req.body.longURL);
+  const genURL = generateString();
   urlDatabase[genURL] = {
     longURL: result,
     userID: req.session.user_id.id
@@ -259,20 +267,16 @@ app.post('/login', (req, res) =>{
   const loggedName = req.body.email;
   const loggedPass = req.body.password;
   var hashed_password = '';
-  console.log('Attempting Login');
-
   if(loggedName && checkUser(loggedName) && loggedPass.length > 0){
     hashed_password = checkUser(loggedName).password;
   } else{
-    console.log('nono');
-    console.log('no match');
     res.send(`<b>Error: Username and Password not entered correctly</b><p>
     <a href='/login'>Return to Login </a>`);
   }
   //Password matches, logging in
   if(bcrypt.compareSync(loggedPass, hashed_password)){
-    userCode = checkUser(loggedName);
-    req.session.user_id = userCode;
+    const user_id = checkUser(loggedName);
+    req.session.user_id = user_id;
     res.redirect('/urls');
   } else {
     res.statusCode = 403;
@@ -284,7 +288,6 @@ app.post('/login', (req, res) =>{
 
 app.post('/logout', (req, res) =>{
   req.session = null;
-  // console.log(`Logging out`);
   res.redirect('/urls');
 });
 
@@ -292,16 +295,14 @@ app.post('/logout', (req, res) =>{
 app.post('/urls/:id/edit', (req, res) =>{
   const cookie = req.session.user_id.id;
   const allowedUser = urlDatabase[req.params.id].userID;
-  // console.log(`${cookie} === ${allowedUser}??`)
   if (cookie === allowedUser){
-    newURL = req.body.newLongURL;
+    const newURL = req.body.newLongURL;
     urlDatabase[req.params.id].longURL = newURL;
     res.redirect(`/urls`);
   } else{
     console.log('no permission');
     res.redirect('/urls');
   }
-
 });
 
 //redirects to url based on ID link
@@ -309,7 +310,7 @@ app.post('/urls/:id', (req, res) =>{
   res.redirect(`/urls/${req.params.id}`);
 });
 
-//POST REGISTER
+//POST endpoint for
 app.post('/register', (req, res) =>{
   let newEmail = req.body.email;
   let password = req.body.password;
@@ -323,7 +324,7 @@ app.post('/register', (req, res) =>{
     res.send(`<b>Error: Username already exists</b><p>
     <a href='/register'>Return to Register </a>`);
   } else {
-    randomStr = generateRandomString();//Generates user_id cookie value
+    const randomStr = generateString();
     //ATTEMPTS TO ADD NEW OBJECT
     addUser(randomStr, newEmail, password);
     req.session.user_id = users[randomStr];
@@ -333,10 +334,12 @@ app.post('/register', (req, res) =>{
 
 });
 
+//
 app.listen(PORT, function() {
   console.log(`Express app listening on port ${PORT}!`);
 });
 
+//Creates users into users object database
 addUser('aaaaaa', 'hello@hello.com', 'hello');
 addUser('wqeqwe', 'asd@asd.com', 'asd');
 addUser('user2RandomID', 'user2@example.com', 'dishwasher-funk');
