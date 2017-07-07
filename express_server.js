@@ -216,6 +216,7 @@ app.get('/login', (req, res) => {
 app.post('/urls', (req, res) => {
   // console.log(req.body);  // debug statement to see POST parameters
   result = checkWWW(req.body.longURL);
+  console.log('making');
   genURL = generateRandomString();
   urlDatabase[genURL] = {
     longURL: result,
@@ -265,6 +266,7 @@ app.post('/login', (req, res) =>{
 });
 
 app.post('/logout', (req, res) =>{
+  console.log('LOGGED OUT SON');
   res.clearCookie('user_id');
   // console.log(`Logging out`);
   res.redirect('/login');
